@@ -2,7 +2,7 @@
 
 > 赛博朋克霓虹风格的个人作品集 · 纯前端 · 数据实时同步自 GitHub
 
-**🔗 在线访问：<https://3000-999035c4b7bb494488469c0df6afa00e.e2b.ap-singapore.sandbox.cloudstudio.club/>**
+**🔗 在线访问：<https://baiqiee-portfolio.app.workbuddy.host/?sharecode=FAMTISQDNX>**
 
 ![首页](docs/preview-hero.jpg)
 
