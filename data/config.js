@@ -10,6 +10,11 @@ window.PORTFOLIO = {
   cacheKey: "bdq-portfolio-repos-v1",
   cacheTTL: 10 * 60 * 1000,
 
+  /* 自动封面：作品出现在页面上时，自动抓取该项目 README 里的第一张截图当封面。
+     抓到的地址缓存 24 小时；徽章（shields 之类）会被跳过，优先静态截图、其次 gif。
+     想给某个项目锁死自己的封面，在 meta 里加 autoCover: false；全局关掉就设成 false。 */
+  autoCover: true,
+
   /* 分类。顺序即筛选标签顺序，数量为 0 的自动隐藏。 */
   categories: [
     { id: "game", label: "游戏", color: "#22d3ee" },
@@ -40,7 +45,8 @@ window.PORTFOLIO = {
   },
 
   /* 单个项目的覆盖配置：分类、展示名、简介、置顶、封面截图、在线试玩地址。
-     cover：本地截图路径（assets/covers/ 下），留空则用程序生成的抽象封面。
+     cover：兜底封面（assets/covers/ 下）。默认封面由 README 首图自动覆盖，
+            想锁死这一张就在该项目里加 autoCover: false。
      demo：项目在线试玩地址（workbuddy.host 域名），留空则不显示播放键。 */
   meta: {
     slimpal: {

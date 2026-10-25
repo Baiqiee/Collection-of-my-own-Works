@@ -113,6 +113,7 @@
     var demo = (manual.demo || "").trim();
     if (!demo && repo.homepage && /^https?:/.test(repo.homepage)) demo = repo.homepage.trim();
 
+    var auto = readAutoCache(repo.name);
     return {
       name: repo.name,
       title: manual.title || repo.name,
@@ -123,6 +124,9 @@
       repoUrl: repoUrl,
       demoUrl: demo,
       cover: manual.cover || "",
+      /* README 自动抓取：首图当封面、首段当简介；有缓存就先顶上，没有等抓取回来再补 */
+      autoCover: auto && auto.cover ? auto.cover : "",
+      autoDesc: auto && auto.desc ? auto.desc : "",
       pinned: manual.pinned === true
     };
   }
@@ -227,12 +231,12 @@
 
   function cardHTML(item, index) {
     var cat = categoryOf(item.category);
-    var cover = item.cover || makeCover(item.name, item.category);
+    var cover = item.autoCover || item.cover || makeCover(item.name, item.category);
     var pin = item.pinned ? '<span class="card-pin">TOP</span>' : "";
     var play = item.demoUrl ? '<span class="card-demo-tag">可试玩</span>' : "";
 
     return (
-      '<article class="card" data-category="' + item.category + '" style="animation-delay:' + Math.min(index * 60, 420) + 'ms">' +
+      '<article class="card" data-category="' + item.category + '" data-repo="' + escapeHTML(item.name) + '" style="animation-delay:' + Math.min(index * 60, 420) + 'ms">' +
       '<a class="card-hit" href="#/p/' + encodeURIComponent(item.name) + '" aria-label="查看 ' + escapeHTML(item.title) + ' 详情"></a>' +
       '<div class="card-cover">' +
       '<img class="cover-bg" src="' + escapeHTML(cover) + '" alt="" aria-hidden="true">' +
@@ -244,7 +248,7 @@
       '<a class="card-repo" href="' + escapeHTML(item.repoUrl) + '" target="_blank" rel="noopener" title="' + escapeHTML(item.repoUrl) + '">' +
       '<svg viewBox="0 0 16 16" width="11" height="11" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A7.995 7.995 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>' +
       "<span>" + escapeHTML(CFG.owner + "/" + item.name) + "</span></a>" +
-      '<p class="card-desc">' + escapeHTML(item.desc) + "</p>" +
+      '<p class="card-desc">' + escapeHTML(item.autoDesc || item.desc) + "</p>" +
       '<div class="card-meta">' +
       '<span class="lang-dot" style="background:' + cat.color + ";color:" + cat.color + '"></span>' +
       "<span>" + escapeHTML(item.language) + "</span>" +
@@ -406,6 +410,201 @@
     fixReadmeLinks(box, name, branch);
   }
 
+  /* ---------- 自动抓取：README 首图当封面 + 首段当简介 ---------- */
+
+  var AUTO_KEY = "bdq-readme-auto-v2:";
+  var AUTO_TTL = 24 * 60 * 60 * 1000;   /* 一天更新一次 */
+  var AUTO_MAX = 2;                     /* 同时最多抓两个，别把网络挤满 */
+  var autoQueue = [];
+  var autoActive = 0;
+
+  function readAutoCache(name) {
+    try {
+      var raw = localStorage.getItem(AUTO_KEY + name);
+      if (!raw) return null;
+      var obj = JSON.parse(raw);
+      if (!obj || Date.now() - (obj.time || 0) > AUTO_TTL) return null;
+      return { cover: obj.cover || "", desc: obj.desc || "" };   /* 空字符串也算结果，免得反复请求 */
+    } catch (e) { return null; }
+  }
+
+  function writeAutoCache(name, data) {
+    try {
+      localStorage.setItem(AUTO_KEY + name, JSON.stringify({ time: Date.now(), cover: data.cover || "", desc: data.desc || "" }));
+    } catch (e) {}
+  }
+
+  /* 徽章、图标不算截图 */
+  function isBadge(url) {
+    return /img\.shields\.io|shields\.io|badgen\.net|badge\.fury|codecov\.io|travis-ci|circleci\.com|appveyor|visitor-badge|komarev\.com|profile-views|\.svg(\?|#|$)/i.test(url);
+  }
+
+  /* 从 README 正文里取第一张图；优先静态截图，只有动图时才退回 gif */
+  function extractFirstImage(md, name, branch) {
+    if (!md) return "";
+    var rawBase = "https://raw.githubusercontent.com/" + CFG.owner + "/" + name + "/" + branch + "/";
+    var text = md.replace(/```[\s\S]*?```/g, " ").replace(/`[^`\n]*`/g, " ");
+
+    var defs = {};
+    text.replace(/^[ \t]*\[([^\]]+)\]:[ \t]*(\S+)/gm, function (all, id, url) {
+      defs[id.toLowerCase()] = url;
+      return all;
+    });
+
+    var found = [];
+    function push(raw) {
+      var url = String(raw || "").trim().replace(/^<|>$/g, "").split(/\s+/)[0];
+      if (!url || /^javascript:/i.test(url)) return;
+      if (/^\/\//.test(url)) url = "https:" + url;
+      else if (!/^(https?:|data:)/i.test(url)) url = rawBase + url.replace(/^\.\//, "").replace(/^\/+/, "");
+      found.push(url);
+    }
+
+    var m;
+    var reMd = /!\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+["'][^"']*["'])?\s*\)/g;
+    while ((m = reMd.exec(text))) push(m[1]);
+
+    var reRef = /!\[[^\]]*\]\[([^\]]*)\]/g;
+    while ((m = reRef.exec(text))) {
+      var key = (m[1] || "").toLowerCase();
+      if (defs[key]) push(defs[key]);
+    }
+
+    var reImg = /<img[^>]+src\s*=\s*["']([^"']+)["']/gi;
+    while ((m = reImg.exec(text))) push(m[1]);
+
+    var real = found.filter(function (u) { return !isBadge(u); });
+    var still = real.filter(function (u) { return !/\.gif(\?|#|$)/i.test(u); });
+    return still[0] || real[0] || "";
+  }
+
+  /* 去掉 markdown / HTML 标记，留下纯文本 */
+  function plainText(s) {
+    return String(s || "")
+      .replace(/<[^>]*>/g, " ")
+      .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+      .replace(/!\[[^\]]*\]\[[^\]]*\]/g, " ")
+      .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+      .replace(/\[([^\]]*)\]\[[^\]]*\]/g, "$1")
+      .replace(/^[ \t]*>+[ \t]?/gm, "")
+      .replace(/^[ \t]*([-*+]|\d+\.)[ \t]+/gm, "")
+      .replace(/[*_~]{1,3}/g, "")
+      .replace(/`+/g, "")
+      .replace(/\\([\\`*_{}\[\]()#+\-.!|>])/g, "$1")
+      .replace(/[ \t\u00a0]+/g, " ")
+      .replace(/[ \t]*\n[ \t]*/g, " ")
+      .trim();
+  }
+
+  function truncate(s, n) {
+    if (s.length <= n) return s;
+    return s.slice(0, n).replace(/[，、,；;：:。\s]+$/, "") + "…";
+  }
+
+  /* 取 README 的第一段正经简介：跳过标题、徽章、目录、链接行、表格、代码、纯图 */
+  function extractFirstParagraph(md) {
+    if (!md) return "";
+    var body = md.replace(/<!--[\s\S]*?-->/g, " ").replace(/```[\s\S]*?```/g, "\n\n");
+
+    var blocks = body.split(/\n[ \t]*\n/);
+    for (var i = 0; i < blocks.length; i++) {
+      var raw = blocks[i].trim();
+      if (!raw) continue;
+      if (/^#{1,6}\s/.test(raw)) continue;              /* 标题 */
+      if (/^([-*_])\1{2,}$/.test(raw)) continue;         /* 分割线 */
+      if (/^\|/.test(raw)) continue;                     /* 表格 */
+      if (/^<(!|\/?\w+)/.test(raw) && !/[。，、！？；]/.test(raw)) continue;  /* 纯 HTML 块 */
+      if (/\]\(/.test(raw)) continue;                    /* 带链接的块（试玩入口之类） */
+      if (/<https?:/.test(raw)) continue;                /* 裸链接 */
+
+      var text = plainText(raw);
+      if (!text) continue;
+      if (/^[\x00-\x7f]+$/.test(text) && !/[a-zA-Z]{4,}/.test(text)) continue;  /* 纯符号 */
+      if ((text.match(/[\u4e00-\u9fa5a-zA-Z0-9]/g) || []).length < 12) continue;
+      var isAllBold = /^\s*(\*\*|__)[\s\S]+(\*\*|__)\s*$/.test(raw) && (raw.split("**").length <= 3);
+      if (isAllBold) continue;                           /* 整段加粗的标语，留作后面的正文 */
+      if (/^(作者|版本|日期|license|mit|目录|table of contents)\b/i.test(text)) continue;
+
+      return truncate(text, 160);
+    }
+    return "";
+  }
+
+  /* 换图前先预加载，加载失败就保留旧封面 */
+  function swapCover(img, url) {
+    if (!img || !url || img.getAttribute("src") === url) return;
+    var probe = new Image();
+    probe.onload = function () {
+      img.classList.add("is-cover-fading");
+      setTimeout(function () {
+        img.src = url;
+        img.removeAttribute("data-fallback");
+        img.classList.remove("is-cover-fading");
+      }, 170);
+    };
+    probe.src = url;
+  }
+
+  /* 抓到了就换上，卡片和详情页一起更新 */
+  function applyAuto(name, data) {
+    var item = findItem(name);
+    if (item) {
+      if (data.cover) item.autoCover = data.cover;
+      if (data.desc) item.autoDesc = data.desc;
+    }
+
+    var scopes = [grid.querySelector('[data-repo="' + name + '"]'), detailRoot.querySelector('[data-repo="' + name + '"]')];
+    scopes.forEach(function (box) {
+      if (!box) return;
+      if (data.cover) {
+        swapCover(box.querySelector(".cover-img"), data.cover);
+        swapCover(box.querySelector(".cover-bg"), data.cover);
+      }
+      if (data.desc) {
+        var p = box.querySelector(".card-desc") || box.querySelector(".detail-desc");
+        if (p && p.textContent.trim() !== data.desc) p.textContent = data.desc;
+      }
+    });
+  }
+
+  function pumpAuto() {
+    while (autoActive < AUTO_MAX && autoQueue.length) {
+      var name = autoQueue.shift();
+      autoActive++;
+      (function (repo) {
+        fetchReadme(repo)
+          .then(function (res) {
+            var data = {
+              cover: extractFirstImage(res.md, repo, res.branch),
+              desc: extractFirstParagraph(res.md)
+            };
+            writeAutoCache(repo, data);
+            if (data.cover || data.desc) applyAuto(repo, data);
+          })
+          .catch(function () {})
+          .then(function () {
+            autoActive--;
+            pumpAuto();
+          });
+      })(name);
+    }
+  }
+
+  /* 每个作品出现在页面上时排队抓一次（有缓存就直接用，不再请求） */
+  function queueAuto() {
+    if (CFG.autoCover === false) return;
+    autoQueue = [];
+    autoActive = 0;
+    items.forEach(function (item) {
+      var manual = CFG.meta[item.name] || {};
+      if (manual.autoCover === false) return;
+      var cached = readAutoCache(item.name);
+      if (cached !== null) { if (cached.cover || cached.desc) applyAuto(item.name, cached); return; }
+      autoQueue.push(item.name);
+    });
+    pumpAuto();
+  }
+
   /* ---------- 详情页 ---------- */
 
   function findItem(name) {
@@ -415,13 +614,13 @@
 
   function detailShell(item) {
     var cat = categoryOf(item.category);
-    var cover = item.cover || makeCover(item.name, item.category);
+    var cover = item.autoCover || item.cover || makeCover(item.name, item.category);
     var playBtn = item.demoUrl
       ? '<a class="btn btn-primary btn-play" href="' + escapeHTML(item.demoUrl) + '" target="_blank" rel="noopener"><span class="play-tri" aria-hidden="true"></span>在线试玩</a>'
       : "";
 
     return (
-      '<div class="detail">' +
+      '<div class="detail" data-repo="' + escapeHTML(item.name) + '">' +
       '<a class="back-link" href="#/"><span aria-hidden="true">←</span> 返回作品集</a>' +
       '<div class="detail-hero">' +
       '<div class="detail-cover"><img class="cover-bg" src="' + escapeHTML(cover) + '" alt="" aria-hidden="true">' +
@@ -429,7 +628,7 @@
       '<div class="detail-info">' +
       '<span class="detail-cat">' + escapeHTML(cat.label.toUpperCase()) + "</span>" +
       '<h1 class="detail-title">' + escapeHTML(item.title) + "</h1>" +
-      '<p class="detail-desc">' + escapeHTML(item.desc) + "</p>" +
+      '<p class="detail-desc">' + escapeHTML(item.autoDesc || item.desc) + "</p>" +
       '<div class="detail-meta"><span class="lang-dot" style="background:' + cat.color + ";color:" + cat.color + '"></span>' +
       escapeHTML(item.language) + '<span class="meta-sep">/</span>更新于 ' + formatDate(item.updated) + "</div>" +
       '<div class="detail-actions">' + playBtn +
@@ -673,26 +872,48 @@
   function runSplash(done) {
     if (!splash) { done(); return; }
 
+    /* 节奏：全息投影 1.5s → 第一下数码闪化 0.3s → 间隙 0.15s → 第二下闪出来就硬切首页 */
     var phase = "loading";
-    var holdTimer = setTimeout(burst, 1500);
+    var timers = [];
+    var holdTimer = setTimeout(firstGlitch, 1500);
+    timers.push(holdTimer);
 
-    function burst() {
+    function later(fn, ms) {
+      timers.push(setTimeout(fn, ms));
+    }
+
+    function finish() {
+      if (phase === "done") return;
+      phase = "done";
+      timers.forEach(clearTimeout);
+      if (splash.parentNode) splash.parentNode.removeChild(splash);
+      document.body.classList.remove("is-loading");
+      done();
+    }
+
+    function firstGlitch() {
       if (phase !== "loading") return;
-      phase = "flash";
-      clearTimeout(holdTimer);
+      if (reducedMotion()) { finish(); return; }
+      phase = "glitch-1";
+      splash.classList.add("is-glitch");
+      later(function () {
+        splash.classList.remove("is-glitch");
+        phase = "gap";
+        later(secondGlitch, 150);
+      }, 300);
+    }
 
-      splash.classList.add("is-flashing");
-
-      setTimeout(function () {
-        if (splash.parentNode) splash.parentNode.removeChild(splash);
-        document.body.classList.remove("is-loading");
-        done();
-      }, 660);
+    function secondGlitch() {
+      if (phase === "done") return;
+      phase = "glitch-2";
+      splash.classList.add("is-glitch-2");
+      later(finish, 110);   /* 第二下刚闪出来就切，不留淡出 */
     }
 
     splash.addEventListener("click", function () {
       if (phase !== "loading") return;
-      burst();
+      clearTimeout(holdTimer);
+      firstGlitch();
     });
   }
 
@@ -776,13 +997,24 @@
     renderFilters();
     renderGrid();
     applyFilter(activeFilter);
+    queueAuto();
 
-    var note = { api: "已同步 GitHub", cache: "缓存数据", snapshot: "离线数据" };
-    var text = note[source] || "已同步";
-    syncNote.textContent = text;
-    heroNote.textContent = text;
+    var note = { api: "已同步 GitHub", cache: "", snapshot: "离线数据" };
+    setNote(Object.prototype.hasOwnProperty.call(note, source) ? note[source] : "已同步");
     renderStats();
 
+  }
+
+  /* 缓存命中也算同步完成，不再单独挂「缓存数据」的标签 */
+  function setNote(text) {
+    var empty = !text;
+    [heroNote, syncNote].forEach(function (el) {
+      if (!el) return;
+      el.textContent = text;
+      el.hidden = empty;
+    });
+    var sep = syncNote ? syncNote.previousElementSibling : null;
+    if (sep && sep.classList.contains("sep")) sep.hidden = empty;
   }
 
   function boot() {

@@ -299,75 +299,226 @@ body.has-pointer .cursor-glow { opacity: 1; }
   text-indent: 0.36em;
 }
 
-/* 闪屏：两下硬闪后进入页面 */
+/* ---------- 虚拟全息投影滤镜（常驻） ---------- */
 
-.splash-flash {
+.splash-proj {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background:
+    radial-gradient(58% 40% at 50% 80%, rgba(0, 229, 255, 0.18), transparent 72%),
+    radial-gradient(38% 26% at 50% 54%, rgba(168, 85, 247, 0.12), transparent 76%),
+    conic-gradient(from 196deg at 50% 96%, transparent 0 41%, rgba(0, 229, 255, 0.12) 45%, transparent 51%, rgba(255, 45, 149, 0.1) 57%, transparent 63%);
+  animation: projBreath 7s ease-in-out infinite;
+}
+
+@keyframes projBreath {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* 投影仪抖：整体极轻微的位移 + 品红/青色边缘分离 */
+.splash-inner {
+  animation: holoProj 5.6s steps(28) infinite;
+}
+
+@keyframes holoProj {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+    filter: drop-shadow(1.6px 0 rgba(0, 229, 255, 0.5)) drop-shadow(-1.6px 0 rgba(255, 45, 149, 0.42));
+    opacity: 1;
+  }
+  22% { transform: translate3d(0.6px, -0.5px, 0); opacity: 0.94; }
+  23% { transform: translate3d(-0.8px, 0.4px, 0); opacity: 1; }
+  47% {
+    transform: translate3d(0, 0, 0);
+    filter: drop-shadow(2.4px 0 rgba(0, 229, 255, 0.62)) drop-shadow(-2.4px 0 rgba(255, 45, 149, 0.5));
+    opacity: 0.9;
+  }
+  48% { opacity: 1; }
+  71% { transform: translate3d(-0.5px, 0.6px, 0); opacity: 0.96; }
+  72% { transform: translate3d(0.5px, -0.4px, 0); }
+  86% {
+    filter: drop-shadow(2px 0 rgba(0, 229, 255, 0.55)) drop-shadow(-2px 0 rgba(255, 45, 149, 0.46));
+    opacity: 0.88;
+  }
+  88% { opacity: 1; }
+}
+
+/* ---------- 结束：两次 2077 式数码闪化，第二下刚闪出来就切页面 ---------- */
+
+.splash-glitch {
   position: absolute;
   inset: 0;
   z-index: 6;
-  background: #fff;
-  opacity: 0;
   pointer-events: none;
+  opacity: 0;
   mix-blend-mode: screen;
+  background: radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.55), rgba(255, 45, 149, 0.34) 42%, rgba(5, 1, 13, 0.9) 78%);
 }
 
-.splash.is-flashing .splash-flash { animation: flashSeq 0.66s linear forwards; }
+.splash.is-glitch .splash-glitch { animation: glitchBloom 0.26s steps(1) both; }
+.splash.is-glitch-2 .splash-glitch { animation: glitchBloom2 0.3s steps(1) both; }
 
-@keyframes flashSeq {
+@keyframes glitchBloom {
   0% { opacity: 0; }
-  2% { opacity: 1; }
-  13% { opacity: 1; }
-  17% { opacity: 0; }
-  45% { opacity: 0; }
-  49% { opacity: 1; }
-  60% { opacity: 1; }
-  64% { opacity: 0; }
+  8% { opacity: 0.55; }
+  22% { opacity: 0.16; }
+  36% { opacity: 0.62; }
+  50% { opacity: 0.12; }
+  62% { opacity: 0.46; }
+  80% { opacity: 0.06; }
   100% { opacity: 0; }
 }
 
-.splash.is-flashing .splash-inner { animation: invertPulse 0.66s steps(1) forwards; }
-
-@keyframes invertPulse {
-  0% { filter: none; }
-  2% { filter: invert(1) contrast(1.4) saturate(1.6); }
-  13% { filter: invert(1) contrast(1.4) saturate(1.6); }
-  17% { filter: none; }
-  45% { filter: none; }
-  49% { filter: invert(1) contrast(1.4) saturate(1.6); }
-  60% { filter: invert(1) contrast(1.4) saturate(1.6); }
-  64% { filter: none; }
-  100% { filter: none; }
+@keyframes glitchBloom2 {
+  0% { opacity: 0.7; }
+  15% { opacity: 0.14; }
+  30% { opacity: 0.78; }
+  48% { opacity: 0.2; }
+  66% { opacity: 0.68; }
+  100% { opacity: 0.2; }
 }
 
+/* logo 数码闪化：RGB 通道撕开 + 逐帧跳位 */
+.splash.is-glitch .splash-inner { animation: cpGlitchA 0.26s steps(1) both; }
+.splash.is-glitch-2 .splash-inner { animation: cpGlitchB 0.3s steps(1) both; }
+
+@keyframes cpGlitchA {
+  0% {
+    transform: translate3d(-7px, 0, 0) scaleY(1.02);
+    filter: drop-shadow(7px 0 rgba(0, 229, 255, 0.9)) drop-shadow(-7px 0 rgba(255, 45, 149, 0.85)) contrast(1.5) saturate(1.7);
+    opacity: 0.92;
+  }
+  18% {
+    transform: translate3d(6px, 1px, 0) scaleY(0.995);
+    filter: drop-shadow(-9px 0 rgba(0, 229, 255, 0.92)) drop-shadow(9px 0 rgba(255, 45, 149, 0.9)) contrast(1.7) saturate(1.9);
+    opacity: 0.8;
+  }
+  36% {
+    transform: translate3d(-4px, -1px, 0) scaleY(1.01);
+    filter: drop-shadow(6px 0 rgba(200, 255, 46, 0.75)) drop-shadow(-6px 0 rgba(255, 45, 149, 0.9)) contrast(1.55) saturate(1.6);
+    opacity: 1;
+  }
+  54% {
+    transform: translate3d(3px, 0, 0);
+    filter: drop-shadow(-4px 0 rgba(0, 229, 255, 0.8)) drop-shadow(4px 0 rgba(255, 45, 149, 0.8)) contrast(1.45);
+    opacity: 0.9;
+  }
+  72% {
+    transform: translate3d(0, 0, 0) scaleY(0.985);
+    filter: drop-shadow(2px 0 rgba(0, 229, 255, 0.7)) drop-shadow(-2px 0 rgba(255, 45, 149, 0.7));
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+    filter: drop-shadow(1.6px 0 rgba(0, 229, 255, 0.5)) drop-shadow(-1.6px 0 rgba(255, 45, 149, 0.42));
+    opacity: 1;
+  }
+}
+
+@keyframes cpGlitchB {
+  0% {
+    transform: translate3d(9px, -1px, 0) scaleY(1.03);
+    filter: drop-shadow(-10px 0 rgba(0, 229, 255, 0.95)) drop-shadow(10px 0 rgba(255, 45, 149, 0.95)) contrast(1.8) saturate(2);
+    opacity: 0.85;
+  }
+  16% {
+    transform: translate3d(-8px, 2px, 0) scaleY(0.98);
+    filter: drop-shadow(11px 0 rgba(255, 45, 149, 0.95)) drop-shadow(-11px 0 rgba(0, 229, 255, 0.95)) contrast(1.9) saturate(2.1);
+    opacity: 0.75;
+  }
+  32% {
+    transform: translate3d(5px, -2px, 0) scaleY(1.02);
+    filter: drop-shadow(-7px 0 rgba(200, 255, 46, 0.8)) drop-shadow(7px 0 rgba(0, 229, 255, 0.9)) contrast(1.6) saturate(1.8);
+    opacity: 1;
+  }
+  48% {
+    transform: translate3d(-3px, 1px, 0);
+    filter: drop-shadow(5px 0 rgba(255, 45, 149, 0.85)) drop-shadow(-5px 0 rgba(0, 229, 255, 0.85)) contrast(1.5);
+    opacity: 0.9;
+  }
+  100% {
+    transform: none;
+    filter: drop-shadow(2px 0 rgba(0, 229, 255, 0.6)) drop-shadow(-2px 0 rgba(255, 45, 149, 0.55));
+    opacity: 1;
+  }
+}
+
+/* 标题的 RGB 分身：平时只露一条缝，闪化时整块错位 */
+.splash.is-glitch .splash-title::before,
+.splash.is-glitch-2 .splash-title::before { animation: glitchCopyA 0.26s steps(1) both; }
+.splash.is-glitch .splash-title::after,
+.splash.is-glitch-2 .splash-title::after { animation: glitchCopyB 0.3s steps(1) both; }
+
+@keyframes glitchCopyA {
+  0% { opacity: 0; transform: translate(0, 0); clip-path: inset(0 0 0 0); }
+  10% { opacity: 0.85; transform: translate(-16px, -2px); clip-path: inset(4% 0 54% 0); }
+  34% { opacity: 0.8; transform: translate(11px, 1px); clip-path: inset(40% 0 26% 0); }
+  58% { opacity: 0.85; transform: translate(-7px, 0); clip-path: inset(62% 0 6% 0); }
+  82% { opacity: 0.7; transform: translate(4px, -1px); clip-path: inset(22% 0 44% 0); }
+  100% { opacity: 0; transform: translate(0, 0); }
+}
+
+@keyframes glitchCopyB {
+  0% { opacity: 0.9; transform: translate(18px, 2px); clip-path: inset(8% 0 48% 0); }
+  22% { opacity: 0.85; transform: translate(-13px, -1px); clip-path: inset(34% 0 30% 0); }
+  46% { opacity: 0.9; transform: translate(9px, 1px); clip-path: inset(56% 0 12% 0); }
+  70% { opacity: 0.8; transform: translate(-5px, 0); clip-path: inset(18% 0 58% 0); }
+  100% { opacity: 0; transform: translate(0, 0); }
+}
+
+/* 数码撕裂带：细长彩色信号条，横向跳动 */
 .tear {
   position: absolute;
-  left: -10%;
-  right: -10%;
-  height: 6%;
+  left: -8%;
+  right: -8%;
+  height: 2px;
   opacity: 0;
-  mix-blend-mode: difference;
-  background: linear-gradient(90deg, var(--pink), #fff 45%, var(--cyan));
+  mix-blend-mode: screen;
+  background: linear-gradient(90deg, transparent, var(--cyan) 16%, #fff 48%, var(--pink) 82%, transparent);
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.8);
 }
 
-.tear-a { top: 18%; }
-.tear-b { top: 42%; }
-.tear-c { top: 63%; }
-.tear-d { top: 82%; }
+.tear-a { top: 14%; }
+.tear-b { top: 31%; }
+.tear-c { top: 46%; height: 3px; }
+.tear-d { top: 63%; }
+.tear-e { top: 77%; }
+.tear-f { top: 88%; height: 4px; }
 
-.splash.is-flashing .tear-a { animation: tearShift 0.66s steps(5) forwards; }
-.splash.is-flashing .tear-b { animation: tearShift 0.66s steps(4) 0.04s forwards; }
-.splash.is-flashing .tear-c { animation: tearShift 0.66s steps(6) 0.02s forwards; }
-.splash.is-flashing .tear-d { animation: tearShift 0.66s steps(3) 0.06s forwards; }
+.splash.is-glitch .tear-a { animation: tearJumpA 0.26s steps(4) both; }
+.splash.is-glitch .tear-b { animation: tearJumpA 0.26s steps(5) 0.02s both; }
+.splash.is-glitch .tear-c { animation: tearJumpA 0.26s steps(3) 0.04s both; }
+.splash.is-glitch .tear-d { animation: tearJumpA 0.26s steps(6) both; }
+.splash.is-glitch .tear-e { animation: tearJumpA 0.26s steps(4) 0.06s both; }
+.splash.is-glitch .tear-f { animation: tearJumpA 0.26s steps(5) 0.03s both; }
 
-@keyframes tearShift {
-  0% { opacity: 0; transform: translateX(-6%) scaleY(0.4); }
-  6% { opacity: 0.95; transform: translateX(4%) scaleY(1); }
-  14% { opacity: 0; transform: translateX(-8%) scaleY(0.6); }
-  34% { opacity: 0; }
-  40% { opacity: 0.9; transform: translateX(7%) scaleY(1); }
-  50% { opacity: 0; transform: translateX(-4%) scaleY(0.5); }
-  100% { opacity: 0; }
+.splash.is-glitch-2 .tear-a { animation: tearJumpB 0.3s steps(5) both; }
+.splash.is-glitch-2 .tear-b { animation: tearJumpB 0.3s steps(3) 0.03s both; }
+.splash.is-glitch-2 .tear-c { animation: tearJumpB 0.3s steps(6) both; }
+.splash.is-glitch-2 .tear-d { animation: tearJumpB 0.3s steps(4) 0.05s both; }
+.splash.is-glitch-2 .tear-e { animation: tearJumpB 0.3s steps(5) 0.02s both; }
+.splash.is-glitch-2 .tear-f { animation: tearJumpB 0.3s steps(4) both; }
+
+@keyframes tearJumpA {
+  0% { opacity: 0; transform: translateX(-14%) scaleY(0.4); }
+  20% { opacity: 0.95; transform: translateX(8%) scaleY(1); }
+  45% { opacity: 0.35; transform: translateX(-6%) scaleY(0.7); }
+  70% { opacity: 0.9; transform: translateX(12%) scaleY(1.2); }
+  100% { opacity: 0; transform: translateX(-4%) scaleY(0.5); }
 }
+
+@keyframes tearJumpB {
+  0% { opacity: 0.95; transform: translateX(16%) scaleY(1.3); }
+  25% { opacity: 0.3; transform: translateX(-10%) scaleY(0.6); }
+  50% { opacity: 1; transform: translateX(9%) scaleY(1.1); }
+  75% { opacity: 0.45; transform: translateX(-14%) scaleY(0.8); }
+  100% { opacity: 0.9; transform: translateX(6%) scaleY(1); }
+}
+
 
 
 /* ---------- 交叠转场幕布 ---------- */
@@ -1681,4 +1832,26 @@ main { position: relative; z-index: 1; }
   }
   .reveal { opacity: 1; transform: none; }
   .curtain { display: none; }
+}
+
+/* ---------- 自动封面（README 首图） ---------- */
+
+.cover-img {
+  transition: transform 0.7s var(--ease), filter 0.5s ease, opacity 0.42s ease;
+}
+
+.cover-bg {
+  transition: opacity 0.42s ease;
+}
+
+.cover-img.is-cover-fading,
+.cover-bg.is-cover-fading {
+  opacity: 0;
+}
+
+/* 没有标签时不要留空壳 */
+.meta-chip[hidden],
+.section-sub .sep[hidden],
+.section-sub #syncNote[hidden] {
+  display: none;
 }
