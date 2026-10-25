@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>白道奇个人作品集</title>
+<meta name="description" content="白道奇个人作品集 · 游戏、App 与网页项目，数据实时同步自 GitHub。">
+<meta name="theme-color" content="#05010d">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23ff2d95'/%3E%3Ctext x='16' y='23' font-size='20' font-family='sans-serif' font-weight='700' text-anchor='middle' fill='%2305010d'%3E%E7%99%BD%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css?v=20261025n">
+</head>
+<body class="is-loading">
+
+<div class="fx" aria-hidden="true">
+  <div class="fx-grid"></div>
+  <div class="fx-horizon"></div>
+  <div class="fx-scan"></div>
+  <div class="fx-noise"></div>
+  <div class="fx-orb fx-orb-a"></div>
+  <div class="fx-orb fx-orb-b"></div>
+  <div class="cursor-glow" id="cursorGlow"></div>
+</div>
+
+<div class="splash" id="splash">
+  <div class="splash-holo" aria-hidden="true"></div>
+  <div class="splash-bars" aria-hidden="true"></div>
+  <div class="splash-frame" aria-hidden="true">
+    <span class="sf-corner sf-tl"></span><span class="sf-corner sf-tr"></span>
+    <span class="sf-corner sf-bl"></span><span class="sf-corner sf-br"></span>
+    <span class="sf-side sf-left">ポートフォリオ ・ シロウチ</span>
+    <span class="sf-side sf-right">NIGHT CITY ・ AD 2077</span>
+    <span class="sf-tag sf-tag-a">広告 / ADVERTISEMENT</span>
+    <span class="sf-tag sf-tag-b">CH.07 / 23:59</span>
+  </div>
+
+  <div class="splash-inner">
+    <div class="splash-mark" aria-hidden="true">白</div>
+    <h1 class="splash-title" data-text="白道奇">白道奇</h1>
+    <p class="splash-kana">シロウチ ・ ポートフォリオ</p>
+    <p class="splash-en">PERSONAL PORTFOLIO / GAME ・ APP ・ WEB</p>
+  </div>
+
+  <div class="splash-flash" id="splashFlash" aria-hidden="true">
+    <span class="tear tear-a"></span>
+    <span class="tear tear-b"></span>
+    <span class="tear tear-c"></span>
+    <span class="tear tear-d"></span>
+  </div>
+</div>
+
+<div class="curtain" id="curtain" aria-hidden="true">
+  <span></span><span></span><span></span><span></span><span></span>
+</div>
+
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="brand" href="#/" data-link>
+      <span class="brand-mark">白</span>
+      <span class="brand-text">
+        <em>白道奇个人作品集</em>
+        <i>SHIROUCHI PORTFOLIO</i>
+      </span>
+    </a>
+    <nav class="nav-links" aria-label="主导航">
+      <a href="#/" class="nav-link" data-nav="home"><span class="nav-jp">ホーム</span>首页</a>
+      <a href="#/about" class="nav-link" data-nav="about"><span class="nav-jp">アバウト</span>关于我</a>
+      <a class="nav-icon" href="https://github.com/baiqiee" target="_blank" rel="noopener" aria-label="GitHub 主页">
+        <svg viewBox="0 0 16 16" width="17" height="17" fill="currentColor" aria-hidden="true">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A7.995 7.995 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/>
+        </svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="view is-active" id="view-home">
+    <section class="hero">
+      <div class="hero-bg" aria-hidden="true">
+        <div class="hero-grid"></div>
+        <div class="hero-glow"></div>
+        <div class="hero-halftone"></div>
+      </div>
+
+      <div class="wrap hero-inner">
+        <div class="hero-copy">
+          <p class="hero-kana">サイバー ・ ポートフォリオ</p>
+          <h1 class="hero-title">
+            <span class="hero-line" data-text="白道奇">白道奇</span>
+            <span class="hero-line hero-line-2" data-text="个人作品集">个人作品集</span>
+          </h1>
+          <p class="hero-desc">游戏、App、网页 —— 用 AI 把想法做到能跑起来。<br>这里是全部作品，点开看细节。</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#works" data-scroll="works">查看作品 <span class="arrow">↓</span></a>
+            <a class="btn btn-ghost" href="#/about" data-link>关于我 <span class="arrow">→</span></a>
+          </div>
+          <div class="hero-meta">
+            <span class="meta-chip"><i class="dot"></i><span id="heroCount">—</span> 件作品</span>
+            <span class="meta-chip" id="heroNote">正在同步</span>
+          </div>
+        </div>
+
+        <div class="hero-art" aria-hidden="true">
+          <span class="art-halo"></span>
+          <svg class="art-ring" viewBox="0 0 300 300">
+            <defs>
+              <path id="ringPath" d="M150,150 m-118,0 a118,118 0 1,1 236,0 a118,118 0 1,1 -236,0"/>
+            </defs>
+            <text class="ring-text">
+              <textPath href="#ringPath" startOffset="0">SHIROUCHI ・ PORTFOLIO ・ 2026 ・ GAME ・ APP ・ WEB ・</textPath>
+            </text>
+          </svg>
+          <img class="hero-figure" src="assets/art/hero-girl.webp" alt="">
+          <span class="art-tick art-tick-a"></span>
+          <span class="art-tick art-tick-b"></span>
+        </div>
+      </div>
+
+      <div class="scroll-cue" aria-hidden="true">
+        <span class="scroll-line"></span>
+        <span class="scroll-text">SCROLL</span>
+      </div>
+    </section>
+
+    <section class="works" id="works">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="section-title-wrap">
+            <p class="section-kana">ワークス</p>
+            <h2 class="section-title">全部作品</h2>
+            <p class="section-sub"><span id="workCount">—</span> 件<span class="sep">/</span><span id="syncNote">正在同步 GitHub</span></p>
+          </div>
+          <div class="filter-bar" id="filterBar" role="tablist" aria-label="作品分类"></div>
+        </div>
+
+        <div class="skeletons" id="skeletons">
+          <div class="sk-card"><div class="sk-cover"></div><div class="sk-line w70"></div><div class="sk-line w45"></div></div>
+          <div class="sk-card"><div class="sk-cover"></div><div class="sk-line w70"></div><div class="sk-line w45"></div></div>
+          <div class="sk-card"><div class="sk-cover"></div><div class="sk-line w70"></div><div class="sk-line w45"></div></div>
+        </div>
+
+        <div class="grid" id="grid"></div>
+        <div class="state" id="state" hidden></div>
+      </div>
+    </section>
+  </section>
+
+  <section class="view" id="view-detail">
+    <div class="wrap" id="detailRoot"></div>
+  </section>
+
+  <section class="view" id="view-about">
+    <section class="about-hero" id="aboutHero">
+      <div class="about-bg" aria-hidden="true">
+        <div class="hero-grid"></div>
+        <div class="hero-glow about-glow"></div>
+        <div class="hero-halftone"></div>
+      </div>
+      <div class="wrap about-hero-inner">
+        <div class="about-figure" data-parallax="-0.16">
+          <img class="figure-img" src="assets/art/about-girl.webp" alt="赛博朋克二次元插画">
+          <span class="figure-glow" aria-hidden="true"></span>
+          <span class="figure-avatar">
+            <img class="avatar" id="avatar" src="https://github.com/baiqiee.png?size=240" alt="白道奇的头像">
+          </span>
+        </div>
+        <div class="about-copy">
+          <p class="about-kana">アバウト ・ ミー</p>
+          <h1 class="about-name" data-text="白道奇">白道奇</h1>
+          <p class="about-role">贵州师范学院 · 计算机科学与技术 · 2027 届</p>
+          <p class="about-line">求职方向：AI 产品经理培训生</p>
+          <div class="hero-actions">
+            <a class="btn btn-ghost" href="https://github.com/baiqiee" target="_blank" rel="noopener">GitHub <span class="arrow">↗</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="scroll-cue" aria-hidden="true">
+        <span class="scroll-line"></span>
+        <span class="scroll-text">SCROLL</span>
+      </div>
+    </section>
+
+    <div class="about-progress" aria-hidden="true"><span id="aboutProgress"></span></div>
+
+    <section class="about-body">
+      <div class="wrap">
+        <article class="panel reveal" data-parallax="-0.06">
+          <p class="panel-kana">イントロ</p>
+          <h2 class="panel-title">关于我</h2>
+          <p class="panel-text">我是白道奇，贵州师范学院计算机科学与技术专业 2027 届本科生。习惯用 AI 辅助把想法做完整：从 Godot 里的游戏原型，到能跑起来的减脂陪伴 App，再到网页。相比单纯写代码，我更在意一个产品为什么值得做、给谁做、怎么验证它真的有人用。</p>
+          <p class="panel-text">目前在做两件事：把手上的项目从「能跑」打磨到「能给别人看」，以及往 AI 产品经理的方向补产品基本功。</p>
+        </article>
+
+        <div class="ribbon-block">
+          <p class="panel-kana">スキル</p>
+          <h2 class="panel-title">技能</h2>
+          <div class="ribbon-wrap" id="ribbonWrap">
+            <div class="ribbon" id="ribbonTrack">
+              <div class="chips" id="skillChips"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="about-cols">
+          <article class="panel reveal">
+            <p class="panel-kana">がくせき</p>
+            <h2 class="panel-title">教育</h2>
+            <ul class="edu-list">
+              <li>
+                <span class="edu-school">贵州师范学院</span>
+                <span class="edu-major">计算机科学与技术 · 本科</span>
+                <span class="edu-time">2023 — 2027</span>
+              </li>
+            </ul>
+          </article>
+
+          <article class="panel reveal">
+            <p class="panel-kana">データ</p>
+            <h2 class="panel-title">数据</h2>
+            <div class="stat-grid">
+              <div class="stat"><span class="stat-num" id="statWorks">0</span><span class="stat-label">件作品</span></div>
+              <div class="stat"><span class="stat-num" id="statCats">0</span><span class="stat-label">个分类</span></div>
+              <div class="stat"><span class="stat-num" id="statYear">2026</span><span class="stat-label">最近更新</span></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <span class="footer-brand">白道奇个人作品集 <em>© 2026</em></span>
+    <span class="footer-links">
+      <a href="mailto:b18582505605@gmail.com">b18582505605@gmail.com</a>
+      <a href="https://github.com/baiqiee" target="_blank" rel="noopener">GitHub</a>
+    </span>
+  </div>
+</footer>
+
+
+<script src="assets/vendor/marked.min.js?v=20261025j"></script>
+<script src="data/config.js?v=20261025j"></script>
+<script src="app.js?v=20261025j"></script>
+</body>
+</html>
